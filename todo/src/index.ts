@@ -46,21 +46,19 @@ app.patch("/todos/:id", (req, res) => {
   const id = parseInt(req.params.id);
   const reqTodo: ReqTodo = req.body;
   const todos: Todo[] = JSON.parse(fs.readFileSync(todoFilePath, "utf8"));
-  let updated = false;
-  let newTodo;
+  let updatedTodo;
   const newTodos = todos.map((todo) => {
     if (todo.id === id) {
       todo.title = reqTodo.title;
       todo.body = reqTodo.body;
-      newTodo = todo;
-      updated = true;
+      updatedTodo = todo;
     }
     return todo;
   });
 
-  if (updated) {
+  if (updatedTodo) {
     fs.writeFileSync(todoFilePath, JSON.stringify(newTodos, null, 2));
-    res.json(newTodo);
+    res.json(updatedTodo);
   } else {
     res.status(404).send({ error: `Todo with id ${id} not found` });
   }
