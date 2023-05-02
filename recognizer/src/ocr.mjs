@@ -2,8 +2,17 @@ import fs from "fs/promises";
 import { fileURLToPath } from "url";
 import { dirname } from "path";
 
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = dirname(__filename);
+function buildFilePath() {
+  // TODO: support relative path
+  const argPath = process.argv[2];
+  if (argPath) {
+    return argPath;
+  }
+
+  const __filename = fileURLToPath(import.meta.url);
+  const __dirname = dirname(__filename);
+  return `${__dirname}/../tmp/image.jpg`;
+}
 
 async function loadImageAsBase64(filePath) {
   try {
@@ -15,8 +24,7 @@ async function loadImageAsBase64(filePath) {
   }
 }
 
-// TODO: コマンドライン引数で渡せるようにする or インタラクティブにファイルを選択できるようにする
-const base64Image = await loadImageAsBase64(`${__dirname}/../tmp/image.jpg`);
+const base64Image = await loadImageAsBase64(buildFilePath());
 
 const requestJson = {
   requests: [
