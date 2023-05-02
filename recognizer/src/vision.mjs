@@ -15,7 +15,7 @@ async function loadImageAsBase64(filePath) {
   }
 }
 
-const base64Image = await loadImageAsBase64(`${__dirname}/tmp/image.jpg`);
+const base64Image = await loadImageAsBase64(`${__dirname}/../tmp/image.jpg`);
 
 const requestJson = {
   requests: [

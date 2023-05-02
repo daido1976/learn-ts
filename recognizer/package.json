@@ -4,6 +4,6 @@
     "jsonwebtoken": "^9.0.0"
   },
   "scripts": {
-    "start": "node index.mjs"
+    "start": "node src/index.mjs"
   }
 }

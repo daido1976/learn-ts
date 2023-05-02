@@ -1,5 +1,5 @@
 import jwt from "jsonwebtoken";
-import keyData from "./service-account-key.json" assert { type: "json" };
+import keyData from "../service-account-key.json" assert { type: "json" };
 
 /**
  * @returns {Promise<string | undefined>} アクセストークン
