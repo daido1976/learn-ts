@@ -19,6 +19,7 @@ async function main() {
     const text = extractTextFrom(visionResponse);
     console.log("---OCR Result---\n", text);
 
+    // @ts-ignore
     const nlResponse = await analyzeEntities(token, text);
     if (!nlResponse) {
       console.error("Unable to analyze entities.");

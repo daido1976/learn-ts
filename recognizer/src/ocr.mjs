@@ -65,6 +65,7 @@ function buildRequestJson(base64Image) {
  */
 export async function analyzeImage(accessToken) {
   const base64Image = await loadImageAsBase64(buildFilePath());
+  // @ts-ignore
   const requestJson = buildRequestJson(base64Image);
 
   try {
