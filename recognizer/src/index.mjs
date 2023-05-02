@@ -1,6 +1,6 @@
 import { getToken } from "./token.mjs";
 import { analyzeImage, extractTextFrom } from "./ocr.mjs";
-import { analyzeEntities, extractContactInfo } from "./nlp.mjs";
+import { analyzeEntities, extractContactInfoFrom } from "./nlp.mjs";
 
 async function main() {
   try {
@@ -25,7 +25,7 @@ async function main() {
       return;
     }
 
-    const result = extractContactInfo(nlResponse);
+    const result = extractContactInfoFrom(nlResponse);
     console.log("---NLP Result---\n", result);
   } catch (error) {
     console.error("Error:", error);

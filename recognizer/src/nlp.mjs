@@ -43,7 +43,7 @@ export async function analyzeEntities(accessToken, text) {
  * @param {{ entities: { type: string, name: string }[] }} nlResponse
  * @returns {{ ORGANIZATION: string, PERSON: string, LOCATION: string, PHONE_NUMBER: string, ADDRESS: string, OTHER: string }}
  */
-export function extractContactInfo(nlResponse) {
+export function extractContactInfoFrom(nlResponse) {
   // See. https://cloud.google.com/natural-language/docs/reference/rest/v1/Entity#type
   const requiredEntities = {
     ORGANIZATION: "",
@@ -54,12 +54,12 @@ export function extractContactInfo(nlResponse) {
     OTHER: "",
   };
 
-  for (const entity of nlResponse.entities) {
+  nlResponse.entities.forEach((entity) => {
     const entityType = entity.type;
     if (requiredEntities.hasOwnProperty(entityType)) {
       requiredEntities[entityType] += entity.name;
     }
-  }
+  });
 
   return requiredEntities;
 }
