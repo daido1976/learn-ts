@@ -33,29 +33,22 @@ export async function analyzeEntities(accessToken, text) {
 }
 
 export function extractContactInfo(nlResponse) {
-  return nlResponse.entities.reduce(
-    (contactInfo, entity) => {
-      switch (entity.type) {
-        case "PERSON":
-          return { ...contactInfo, name: entity.name };
-        case "ORGANIZATION":
-          return { ...contactInfo, companyName: entity.name };
-        case "PHONE_NUMBER":
-          return { ...contactInfo, phoneNumber: entity.name };
-        case "EMAIL_ADDRESS":
-          return { ...contactInfo, email: entity.name };
-        case "TITLE":
-          return { ...contactInfo, title: entity.name };
-        default:
-          return contactInfo;
-      }
-    },
-    {
-      name: "",
-      title: "",
-      companyName: "",
-      phoneNumber: "",
-      email: "",
+  // See. https://cloud.google.com/natural-language/docs/reference/rest/v1/Entity#type
+  const requiredEntities = {
+    ORGANIZATION: "",
+    PERSON: "",
+    LOCATION: "",
+    PHONE_NUMBER: "",
+    ADDRESS: "",
+    OTHER: "",
+  };
+
+  for (const entity of nlResponse.entities) {
+    const entityType = entity.type;
+    if (requiredEntities.hasOwnProperty(entityType)) {
+      requiredEntities[entityType] += entity.name;
     }
-  );
+  }
+
+  return requiredEntities;
 }
