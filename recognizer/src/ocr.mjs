@@ -61,9 +61,17 @@ export async function analyzeImage(accessToken) {
     }
 
     const data = await response.json();
-    return data.responses[0];
+    return data;
   } catch (error) {
     console.error("Error:", error);
     return null;
   }
+}
+
+export function extractTextFrom(visionResponse) {
+  const textAnnotations = visionResponse.responses[0].textAnnotations;
+  if (textAnnotations && textAnnotations.length > 0) {
+    return textAnnotations[0].description;
+  }
+  return null;
 }
