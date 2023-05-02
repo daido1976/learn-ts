@@ -26,14 +26,6 @@ const requestJson = {
       },
       features: [
         {
-          type: "LABEL_DETECTION",
-          maxResults: 3,
-        },
-        {
-          type: "OBJECT_LOCALIZATION",
-          maxResults: 1,
-        },
-        {
           type: "TEXT_DETECTION",
           maxResults: 1,
           model: "builtin/latest",
