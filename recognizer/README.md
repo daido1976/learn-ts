@@ -1,3 +1,5 @@
+Recognize image of Japanese business card by Google Cloud Vision API & Natural Language API.
+
 ### Usage
 
 1. Set service-account-key.json file to root.
