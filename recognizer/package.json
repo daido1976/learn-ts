@@ -2,5 +2,8 @@
   "type": "module",
   "dependencies": {
     "jsonwebtoken": "^9.0.0"
+  },
+  "scripts": {
+    "start": "node index.mjs"
   }
 }
