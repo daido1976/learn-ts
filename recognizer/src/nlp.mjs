@@ -1,4 +1,9 @@
-// Natural Language API にテキストを送信
+/**
+ * Google Natural Language API を使用して、指定されたテキスト内のエンティティを分析する
+ * @param {string} accessToken
+ * @param {string} text
+ * @returns {Promise<{ entities: { type: string, name: string }[] }|null>} APIからのレスポンス、またはエラーが発生した場合は null。
+ */
 export async function analyzeEntities(accessToken, text) {
   try {
     const response = await fetch(
@@ -32,6 +37,11 @@ export async function analyzeEntities(accessToken, text) {
   }
 }
 
+/**
+ * Natural Language API のレスポンスから連絡先情報を抽出する
+ * @param {{ entities: { type: string, name: string }[] }} nlResponse
+ * @returns {{ ORGANIZATION: string, PERSON: string, LOCATION: string, PHONE_NUMBER: string, ADDRESS: string, OTHER: string }}
+ */
 export function extractContactInfo(nlResponse) {
   // See. https://cloud.google.com/natural-language/docs/reference/rest/v1/Entity#type
   const requiredEntities = {
