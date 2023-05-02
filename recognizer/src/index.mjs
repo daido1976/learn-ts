@@ -17,7 +17,7 @@ async function main() {
     }
 
     const text = extractTextFrom(visionResponse);
-    console.log(text);
+    console.log("---OCR Result---\n", text);
 
     const nlResponse = await analyzeEntities(token, text);
     if (!nlResponse) {
@@ -26,7 +26,7 @@ async function main() {
     }
 
     const result = extractContactInfo(nlResponse);
-    console.log(result);
+    console.log("---NLP Result---\n", result);
   } catch (error) {
     console.error("Error:", error);
   }
