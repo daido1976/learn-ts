@@ -1,6 +1,8 @@
 import jwt from "jsonwebtoken";
 import keyData from "../service-account-key.json" assert { type: "json" };
 
+const tokenEndpoint = "https://oauth2.googleapis.com/token";
+
 /**
  * @returns {Promise<string | null>} アクセストークン
  * @see {@link https://developers.google.com/identity/protocols/oauth2/service-account}
@@ -12,10 +14,11 @@ export async function getToken() {
   const payload = {
     iss: keyData.client_email,
     sub: keyData.client_email,
-    aud: "https://oauth2.googleapis.com/token",
+    aud: tokenEndpoint,
     iat,
     exp,
-    scope: "https://www.googleapis.com/auth/cloud-platform",
+    scope:
+      "https://www.googleapis.com/auth/cloud-vision https://www.googleapis.com/auth/cloud-language",
   };
 
   // JWTトークンを署名
@@ -25,7 +28,7 @@ export async function getToken() {
 
   // アクセストークンを取得
   try {
-    const response = await fetch(keyData.token_uri, {
+    const response = await fetch(tokenEndpoint, {
       method: "POST",
       headers: { "Content-Type": "application/x-www-form-urlencoded" },
       body: `grant_type=urn:ietf:params:oauth:grant-type:jwt-bearer&assertion=${jwtToken}`,
