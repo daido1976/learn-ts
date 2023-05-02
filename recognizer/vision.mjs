@@ -1,10 +1,27 @@
+import fs from "fs/promises";
+import { fileURLToPath } from "url";
+import { dirname } from "path";
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
+
+async function loadImageAsBase64(filePath) {
+  try {
+    const fileBuffer = await fs.readFile(filePath);
+    return fileBuffer.toString("base64");
+  } catch (error) {
+    console.error("Error:", error);
+    return null;
+  }
+}
+
+const base64Image = await loadImageAsBase64(`${__dirname}/tmp/image.jpg`);
+
 const requestJson = {
   requests: [
     {
       image: {
-        source: {
-          imageUri: "https://item-shopping.c.yimg.jp/i/n/print-am_m-121-30",
-        },
+        content: base64Image,
       },
       features: [
         {
