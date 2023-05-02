@@ -3,6 +3,7 @@
  * @param {string} accessToken
  * @param {string} text
  * @returns {Promise<{ entities: { type: string, name: string }[] }|null>} APIからのレスポンス、またはエラーが発生した場合は null。
+ * @see {@link https://cloud.google.com/natural-language/docs/analyzing-entities?hl=ja}
  */
 export async function analyzeEntities(accessToken, text) {
   try {

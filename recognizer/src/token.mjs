@@ -3,6 +3,7 @@ import keyData from "../service-account-key.json" assert { type: "json" };
 
 /**
  * @returns {Promise<string | null>} アクセストークン
+ * @see {@link https://developers.google.com/identity/protocols/oauth2/service-account}
  */
 export async function getToken() {
   // JWT payload を作成

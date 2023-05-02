@@ -61,6 +61,7 @@ function buildRequestJson(base64Image) {
  * Google Cloud Vision API を利用して画像を解析する
  * @param {string} accessToken アクセストークン
  * @returns {Promise<{responses: Array<{textAnnotations: Array<{description: string}>}>} | null>} Vision API のレスポンスデータ
+ * @see {@link https://cloud.google.com/vision/docs/ocr?hl=ja#vision_text_detection-drest}
  */
 export async function analyzeImage(accessToken) {
   const base64Image = await loadImageAsBase64(buildFilePath());
