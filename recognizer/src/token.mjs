@@ -5,18 +5,19 @@ import keyData from "../service-account-key.json" assert { type: "json" };
  * @returns {Promise<string | null>} アクセストークン
  */
 export async function getToken() {
-  // JWTを作成
+  // JWT payload を作成
   const iat = Math.floor(Date.now() / 1000);
   const exp = iat + 3600;
   const payload = {
     iss: keyData.client_email,
     sub: keyData.client_email,
     aud: "https://oauth2.googleapis.com/token",
-    iat: iat,
-    exp: exp,
+    iat,
+    exp,
     scope: "https://www.googleapis.com/auth/cloud-platform",
   };
 
+  // JWTトークンを署名
   const jwtToken = jwt.sign(payload, keyData.private_key, {
     algorithm: "RS256",
   });
@@ -28,12 +29,13 @@ export async function getToken() {
       headers: { "Content-Type": "application/x-www-form-urlencoded" },
       body: `grant_type=urn:ietf:params:oauth:grant-type:jwt-bearer&assertion=${jwtToken}`,
     });
+
     if (!response.ok) {
       throw new Error(`HTTP error! status: ${response.status}`);
     }
-    const data = await response.json();
-    const accessToken = data.access_token;
-    return accessToken;
+
+    const { access_token } = await response.json();
+    return access_token;
   } catch (error) {
     console.error("Error:", error);
     return null;
