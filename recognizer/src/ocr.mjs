@@ -15,6 +15,7 @@ async function loadImageAsBase64(filePath) {
   }
 }
 
+// TODO: コマンドライン引数で渡せるようにする or インタラクティブにファイルを選択できるようにする
 const base64Image = await loadImageAsBase64(`${__dirname}/../tmp/image.jpg`);
 
 const requestJson = {

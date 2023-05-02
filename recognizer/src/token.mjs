@@ -2,7 +2,7 @@ import jwt from "jsonwebtoken";
 import keyData from "../service-account-key.json" assert { type: "json" };
 
 /**
- * @returns {Promise<string | undefined>} アクセストークン
+ * @returns {Promise<string | null>} アクセストークン
  */
 export async function getToken() {
   // JWTを作成
@@ -36,7 +36,7 @@ export async function getToken() {
     return accessToken;
   } catch (error) {
     console.error("Error:", error);
-    return undefined;
+    return null;
   }
 }
 

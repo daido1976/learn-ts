@@ -33,36 +33,29 @@ export async function analyzeEntities(accessToken, text) {
 }
 
 export function extractContactInfo(nlResponse) {
-  const entities = nlResponse.entities;
-  const contactInfo = {
-    name: "",
-    title: "",
-    companyName: "",
-    phoneNumber: "",
-    email: "",
-  };
-
-  entities.forEach((entity) => {
-    switch (entity.type) {
-      case "PERSON":
-        contactInfo.name = entity.name;
-        break;
-      case "ORGANIZATION":
-        contactInfo.companyName = entity.name;
-        break;
-      case "PHONE_NUMBER":
-        contactInfo.phoneNumber = entity.name;
-        break;
-      case "EMAIL_ADDRESS":
-        contactInfo.email = entity.name;
-        break;
-      case "TITLE":
-        contactInfo.title = entity.name;
-        break;
-      default:
-        break;
+  return nlResponse.entities.reduce(
+    (contactInfo, entity) => {
+      switch (entity.type) {
+        case "PERSON":
+          return { ...contactInfo, name: entity.name };
+        case "ORGANIZATION":
+          return { ...contactInfo, companyName: entity.name };
+        case "PHONE_NUMBER":
+          return { ...contactInfo, phoneNumber: entity.name };
+        case "EMAIL_ADDRESS":
+          return { ...contactInfo, email: entity.name };
+        case "TITLE":
+          return { ...contactInfo, title: entity.name };
+        default:
+          return contactInfo;
+      }
+    },
+    {
+      name: "",
+      title: "",
+      companyName: "",
+      phoneNumber: "",
+      email: "",
     }
-  });
-
-  return contactInfo;
+  );
 }
