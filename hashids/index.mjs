@@ -1,4 +1,3 @@
-// @ts-check
 import Hashids from "hashids";
 import { parseArgs } from "node:util";
 
@@ -32,7 +31,7 @@ const args = parseArgs({
 });
 
 if (args.values.help) {
-  console.log(`usage: command (-e|-d) [-s SALT -l MIN_LENGTH] (id)
+  console.log(`usage: command (-e|-d) [-s SALT -l MIN_LENGTH] (hashid|int)
     -e <encode>
     -d <decode>
     -s SALT (default: "")
@@ -44,9 +43,10 @@ const hashids = new Hashids(
   args.values.salt,
   parseInt(args.values.length ?? "0", 10)
 );
+const hashidOrInt = args.positionals[0];
 
 if (args.values.encode) {
-  console.log(hashids.encode(parseInt(args.positionals[0])));
+  console.log(hashids.encode(parseInt(hashidOrInt)));
 } else if (args.values.decode) {
-  console.log(hashids.decode(args.positionals[0]));
+  console.log(hashids.decode(hashidOrInt));
 }
