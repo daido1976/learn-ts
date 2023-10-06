@@ -1,6 +1,5 @@
 {
   "dependencies": {
-    "hashids": "^2.3.0",
-    "minimist": "^1.2.8"
+    "hashids": "^2.3.0"
   }
 }
