@@ -10,14 +10,14 @@ const entries = [
   { file: "file3.php", comment: "comment3", insert: "insert3" },
 ];
 
-entries.forEach(async (entry) => {
+entries.forEach((entry) => {
   const filePath = path.resolve(process.cwd(), entry.file);
-  const fileContent = await fs.promises.readFile(filePath, "utf8");
+  const fileContent = fs.readFileSync(filePath, "utf8");
   const lines = fileContent.split("\n");
 
   const newLines = lines.flatMap((line) =>
     line.includes(entry.comment) ? [line, entry.insert] : [line]
   );
 
-  await fs.promises.writeFile(filePath, newLines.join("\n"), "utf8");
+  fs.writeFileSync(filePath, newLines.join("\n"), "utf8");
 });
