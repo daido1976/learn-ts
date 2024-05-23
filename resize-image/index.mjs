@@ -1,4 +1,8 @@
-import AWS from "aws-sdk";
+import {
+  S3Client,
+  GetObjectCommand,
+  PutObjectCommand,
+} from "@aws-sdk/client-s3";
 import Jimp from "jimp";
 
 /**
@@ -60,7 +64,7 @@ import Jimp from "jimp";
 export const handler = async (event, _context) => {
   // Lambda@Edgeでは環境変数が利用できないためハードコードする
   const BUCKET = "your-bucket-name";
-  const S3 = new AWS.S3({ region: "ap-northeast-1" });
+  const s3Client = new S3Client({ region: "ap-northeast-1" });
 
   const response = event.Records[0].cf.response;
 
@@ -79,17 +83,18 @@ export const handler = async (event, _context) => {
 
     try {
       // オリジナル画像を取得
-      const data = await S3.getObject({
+      const getObjectCommand = new GetObjectCommand({
         Bucket: BUCKET,
         Key: originalKey,
-      }).promise();
+      });
+      const data = await s3Client.send(getObjectCommand);
       console.log("S3.getObject success");
 
-      if (!(data.Body instanceof Buffer)) {
-        console.log("data.Body is not a Buffer");
+      if (!data.Body) {
+        console.log("No image data");
         return response;
       }
-      const buffer = Buffer.from(data.Body);
+      const buffer = Buffer.from(await data.Body.transformToByteArray());
       console.log(`buffer length: ${buffer.length}`);
 
       // jimpのデコーダーをカスタマイズしてメモリ使用量を緩和する
@@ -113,14 +118,15 @@ export const handler = async (event, _context) => {
       const resizedBuffer = await image.getBufferAsync(mimeType);
 
       // 変換後の画像ファイルをS3に保存する
-      await S3.putObject({
+      const putObjectCommand = new PutObjectCommand({
         Body: resizedBuffer,
         Bucket: BUCKET,
         ContentType: mimeType,
         CacheControl: "max-age=31536000",
         Key: subRequestUri,
         StorageClass: "STANDARD",
-      }).promise();
+      });
+      await s3Client.send(putObjectCommand);
       console.log("S3.putObject success");
 
       // 変換後の画像ファイルをそのままCloudFrontからのレスポンスとして利用する

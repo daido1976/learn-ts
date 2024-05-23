@@ -4,7 +4,7 @@
   "description": "",
   "main": "index.mjs",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "build": "npm prune --production && zip -r resize-image.zip . && npm install"
   },
   "keywords": [],
   "author": "",
@@ -13,6 +13,6 @@
     "jimp": "^0.22.12"
   },
   "devDependencies": {
-    "aws-sdk": "^2.1626.0"
+    "@aws-sdk/client-s3": "^3.582.0"
   }
 }
