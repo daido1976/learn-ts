@@ -4,15 +4,17 @@
   "description": "",
   "main": "index.mjs",
   "scripts": {
-    "build": "npm prune --production && zip -r resize-image.zip . && npm install"
+    "build:jimp": "npm prune --production && zip -r resize-image.zip . && npm install",
+    "build:sharp": "npm install --cpu=x64 --os=linux sharp && npm prune --production && zip -r resize-image.zip . && npm install"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
-  "dependencies": {
+  "devDependencies": {
+    "@aws-sdk/client-s3": "^3.582.0",
     "jimp": "^0.22.12"
   },
-  "devDependencies": {
-    "@aws-sdk/client-s3": "^3.582.0"
+  "dependencies": {
+    "sharp": "^0.33.4"
   }
 }

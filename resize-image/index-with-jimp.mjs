@@ -3,7 +3,7 @@ import {
   GetObjectCommand,
   PutObjectCommand,
 } from "@aws-sdk/client-s3";
-import sharp from "sharp";
+import Jimp from "jimp";
 
 /**
  * @typedef {Object} CloudFrontHeaders
@@ -97,15 +97,25 @@ export const handler = async (event, _context) => {
       const buffer = Buffer.from(await data.Body.transformToByteArray());
       console.log(`buffer length: ${buffer.length}`);
 
-      const image = sharp(buffer);
+      // jimpのデコーダーをカスタマイズしてメモリ使用量を緩和する
+      // See. https://github.com/jimp-dev/jimp/issues/915
+      const cachedJpegDecoder = Jimp.decoders["image/jpeg"];
+      Jimp.decoders["image/jpeg"] = (data) => {
+        const userOpts = { maxMemoryUsageInMB: 4096 };
+        // @ts-ignore
+        return cachedJpegDecoder(data, userOpts);
+      };
+
+      const image = await Jimp.read(buffer);
+      console.log(`Image read: ${image.getWidth()}x${image.getHeight()}`);
 
       // 画像をリサイズ（縦横150px上限）
-      const resizedBuffer = await image.resize(150).toBuffer();
-      const metadata = await image.metadata();
-      const mimeType =
-        metadata.format === "jpeg" ? "image/jpeg" : `image/${metadata.format}`;
-      console.log(`Image resized: ${metadata.width}x${metadata.height}`);
+      image.resize(150, Jimp.AUTO);
+      console.log(`Image resized: ${image.getWidth()}x${image.getHeight()}`);
+
+      const mimeType = image._originalMime;
       console.log(`MIME type: ${mimeType}`);
+      const resizedBuffer = await image.getBufferAsync(mimeType);
 
       // 変換後の画像ファイルをS3に保存する
       const putObjectCommand = new PutObjectCommand({
