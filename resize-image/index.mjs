@@ -6,72 +6,21 @@ import {
 import sharp from "sharp";
 
 /**
- * @typedef {Object} CloudFrontHeaders
- * @property {Array<{key: string, value: string}>} [strict-transport-security]
- * @property {Array<{key: string, value: string}>} [content-security-policy]
- * @property {Array<{key: string, value: string}>} [x-content-type-options]
- * @property {Array<{key: string, value: string}>} [x-frame-options]
- * @property {Array<{key: string, value: string}>} [x-xss-protection]
- * @property {Array<{key: string, value: string}>} [referrer-policy]
- */
-
-/**
- * @typedef {Object} CloudFrontRequest
- * @property {string} uri
- * @property {string} querystring
- * @property {CloudFrontHeaders} headers
- */
-
-/**
- * @typedef {Object} CloudFrontResponse
- * @property {string} body
- * @property {string} bodyEncoding
- * @property {string} status
- * @property {string} statusDescription
- * @property {CloudFrontHeaders} headers
- */
-
-/**
- * @typedef {Object} CloudFrontEventRecord
- * @property {{ request: CloudFrontRequest, response: CloudFrontResponse }} cf
- */
-
-/**
- * @typedef {Object} CloudFrontEvent
- * @property {Array<CloudFrontEventRecord>} Records
- */
-
-/**
- * @typedef {Object} LambdaContext
- * @property {string} functionName
- * @property {string} functionVersion
- * @property {string} invokedFunctionArn
- * @property {string} memoryLimitInMB
- * @property {string} awsRequestId
- * @property {string} logGroupName
- * @property {string} logStreamName
- * @property {Function} getRemainingTimeInMillis
- * @property {Function} done
- * @property {Function} fail
- * @property {Function} succeed
- */
-
-/**
- * @param {CloudFrontEvent} event - The CloudFront event object.
- * @param {LambdaContext} _context - The Lambda context object.
- * @returns {Promise<CloudFrontResponse>} The modified CloudFront response.
+ * @param {import('aws-lambda').CloudFrontResponseEvent} event - The CloudFront event object.
+ * @param {import('aws-lambda').Context} _context - The Lambda context object.
+ * @returns {Promise<import('aws-lambda').CloudFrontResponseResult>} The modified CloudFront response.
  */
 export const handler = async (event, _context) => {
   // Lambda@Edgeでは環境変数が利用できないためハードコードする
   const BUCKET = "your-bucket-name";
   const s3Client = new S3Client({ region: "ap-northeast-1" });
 
-  const response = event.Records[0].cf.response;
+  const originResponse = event.Records[0].cf.response;
 
-  console.log(`Response status code: ${response.status}`);
+  console.log(`Response status code: ${originResponse.status}`);
 
   // 画像が存在しない場合
-  if (response.status === "403" || response.status === "404") {
+  if (originResponse.status === "403" || originResponse.status === "404") {
     const request = event.Records[0].cf.request;
     const requestUri = request.uri;
     const subRequestUri = requestUri.substring(1);
@@ -92,7 +41,7 @@ export const handler = async (event, _context) => {
 
       if (!data.Body) {
         console.log("No image data");
-        return response;
+        return originResponse;
       }
       const buffer = Buffer.from(await data.Body.transformToByteArray());
       console.log(`buffer length: ${buffer.length}`);
@@ -120,21 +69,24 @@ export const handler = async (event, _context) => {
       console.log("S3.putObject success");
 
       // 変換後の画像ファイルをそのままCloudFrontからのレスポンスとして利用する
-      response.status = "200";
-      response.body = resizedBuffer.toString("base64");
-      response.bodyEncoding = "base64";
-      response.headers["content-type"] = [
-        { key: "Content-Type", value: mimeType },
-      ];
-
-      return response;
+      return {
+        ...originResponse,
+        status: "200",
+        statusDescription: "OK",
+        body: resizedBuffer.toString("base64"),
+        bodyEncoding: "base64",
+        headers: {
+          ...originResponse.headers,
+          "content-type": [{ key: "Content-Type", value: mimeType }],
+        },
+      };
     } catch (err) {
       console.log("Exception while processing image: %j", err);
-      return response;
+      return originResponse;
     }
   } else {
     // 画像が存在する場合
     console.log("Image exists");
-    return response;
+    return originResponse;
   }
 };
