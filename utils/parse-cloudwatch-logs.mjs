@@ -47,13 +47,45 @@ const csvData = [
   ),
 ].join("\n");
 
+// Convert to JSON format
+const jsonData = JSON.stringify(logEntries, null, 2);
+
+// Parse command line arguments
 const [option, outputFile] = process.argv.slice(2);
 
-if (option === "-f" && outputFile) {
-  // Write CSV data to a file
-  writeFileSync(outputFile, csvData);
-  console.log(`CSV file has been created at ${outputFile}.`);
+if (option === "-h") {
+  console.log(`Usage:
+  -f <outputFile>  Write data to a file (supports .csv and .json)
+  -j               Output data in JSON format to stdout
+  -h               Show this help message
+  If no option is provided, the data is output in CSV format to stdout.`);
+} else if (option === "-f" && outputFile) {
+  // Determine file extension
+  const extension = outputFile.split(".").pop();
+
+  if (extension === "csv") {
+    // Write CSV data to a file
+    writeFileSync(outputFile, csvData);
+    console.log(`CSV file has been created at ${outputFile}.`);
+  } else if (extension === "json") {
+    // Write JSON data to a file
+    writeFileSync(outputFile, jsonData);
+    console.log(`JSON file has been created at ${outputFile}.`);
+  } else {
+    console.error("Unsupported file type. Please use .csv or .json.");
+  }
 } else {
-  // Write CSV data to standard output
-  console.log(csvData);
+  // Output format defaults to CSV if no file is specified
+  if (!option) {
+    console.log(csvData);
+  } else {
+    // If option is provided but no output file, default to JSON
+    if (option === "-j") {
+      console.log(jsonData);
+    } else {
+      console.error(
+        "Unsupported option. Use -f for file output, -j for JSON output, or -h for help."
+      );
+    }
+  }
 }
