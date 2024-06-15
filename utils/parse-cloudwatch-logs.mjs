@@ -1,4 +1,5 @@
 import { writeFileSync } from "node:fs";
+import { parseArgs } from "node:util";
 
 // Labmda@Edge log data string retrieved by CloudWatch Logs
 const logData = `
@@ -50,16 +51,33 @@ const csvData = [
 // Convert to JSON format
 const jsonData = JSON.stringify(logEntries, null, 2);
 
-// Parse command line arguments
-const [option, outputFile] = process.argv.slice(2);
+// Command line arguments using parseArgs
+const {
+  values: { file: outputFile, json: outputJson, help: showHelp },
+} = parseArgs({
+  options: {
+    file: {
+      type: "string",
+      short: "f",
+    },
+    json: {
+      type: "boolean",
+      short: "j",
+    },
+    help: {
+      type: "boolean",
+      short: "h",
+    },
+  },
+});
 
-if (option === "-h") {
+if (showHelp) {
   console.log(`Usage:
-  -f <outputFile>  Write data to a file (supports .csv and .json)
-  -j               Output data in JSON format to stdout
-  -h               Show this help message
+  -f, --file <outputFile>  Write data to a file (supports .csv and .json)
+  -j, --json               Output data in JSON format to stdout
+  -h, --help               Show this help message
   If no option is provided, the data is output in CSV format to stdout.`);
-} else if (option === "-f" && outputFile) {
+} else if (outputFile) {
   // Determine file extension
   const extension = outputFile.split(".").pop();
 
@@ -76,16 +94,9 @@ if (option === "-h") {
   }
 } else {
   // Output format defaults to CSV if no file is specified
-  if (!option) {
-    console.log(csvData);
+  if (outputJson) {
+    console.log(jsonData);
   } else {
-    // If option is provided but no output file, default to JSON
-    if (option === "-j") {
-      console.log(jsonData);
-    } else {
-      console.error(
-        "Unsupported option. Use -f for file output, -j for JSON output, or -h for help."
-      );
-    }
+    console.log(csvData);
   }
 }

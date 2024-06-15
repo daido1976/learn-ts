@@ -2,7 +2,6 @@ import Hashids from "hashids";
 import { parseArgs } from "node:util";
 
 const args = parseArgs({
-  args: process.argv.slice(2),
   allowPositionals: true,
   options: {
     encode: {
