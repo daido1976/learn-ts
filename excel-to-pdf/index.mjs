@@ -1,7 +1,7 @@
 import ExcelJS from "exceljs";
 import PDFDocument from "pdfkit";
-import fs from "fs";
-import path from "path";
+import fs from "node:fs";
+import path from "node:path";
 
 /**
  * Convert an Excel file to a PDF file.
@@ -18,13 +18,30 @@ const convertExcelToPdf = async (inputPath, outputPath) => {
   const pdfDoc = new PDFDocument();
   pdfDoc.pipe(fs.createWriteStream(outputPath));
 
+  // フォントとマージン設定
+  const fontSize = 12;
+  const topMargin = 20;
+  const leftMargin = 20;
+  pdfDoc.fontSize(fontSize);
+
   // Excelの各シートをPDFに変換
   workbook.eachSheet((worksheet) => {
-    worksheet.eachRow((row) => {
-      row.eachCell((cell) => {
-        pdfDoc.text(cell.text, { continued: true });
+    worksheet.eachRow((row, rowNumber) => {
+      row.eachCell((cell, colNumber) => {
+        const cellWidth = 100; // 列の幅を固定値に設定
+        const cellHeight = fontSize + 10; // セルの高さを固定値に設定
+        const x = leftMargin + (colNumber - 1) * cellWidth;
+        const y = topMargin + (rowNumber - 1) * cellHeight;
+
+        // セルの内容を描画
+        pdfDoc.text(cell.text, x + 5, y + 5, {
+          width: cellWidth - 10,
+          height: cellHeight - 10,
+        });
+
+        // セルの罫線を描画
+        pdfDoc.rect(x, y, cellWidth, cellHeight).stroke();
       });
-      pdfDoc.text("\n");
     });
     pdfDoc.addPage();
   });
@@ -46,11 +63,9 @@ if (!inputPath) {
 const outputPath =
   args[1] || path.join(process.cwd(), `${path.parse(inputPath).name}.pdf`);
 
-(async () => {
-  try {
-    await convertExcelToPdf(inputPath, outputPath);
-    console.log("Excel to PDF conversion complete!");
-  } catch (error) {
-    console.error("Error converting Excel to PDF:", error);
-  }
-})();
+try {
+  await convertExcelToPdf(inputPath, outputPath);
+  console.log("Excel to PDF conversion complete!");
+} catch (error) {
+  console.error("Error converting Excel to PDF:", error);
+}
