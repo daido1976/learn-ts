@@ -14,15 +14,16 @@ const s3 = new S3Client({ region: "ap-northeast-1" });
  * @returns {Promise<import('aws-lambda').APIGatewayProxyResultV2>}
  */
 export const handler = async (event) => {
-  const bucketName = process.env.S3_BUCKET_NAME;
-  const objectKey = event.queryStringParameters?.key ?? "";
+  const sourceBucketName = process.env.SOURCE_S3_BUCKET_NAME; // 元バケット名
+  const destinationBucketName = process.env.DESTINATION_S3_BUCKET_NAME; // 先バケット名
+  const objectKey = decodeURIComponent(event.rawPath.substring(1)); // パスからキーを取得
   const tmpPath = process.env.HOME ?? "/tmp";
   console.log("event", JSON.stringify(event));
-  console.log({ objectKey, bucketName, tmpPath });
+  console.log({ objectKey, sourceBucketName, destinationBucketName, tmpPath });
 
   try {
     // S3からファイルをダウンロード
-    const getObjectParams = { Bucket: bucketName, Key: objectKey };
+    const getObjectParams = { Bucket: sourceBucketName, Key: objectKey };
     const getObjectCommand = new GetObjectCommand(getObjectParams);
     const data = await s3.send(getObjectCommand);
 
@@ -30,24 +31,24 @@ export const handler = async (event) => {
       throw new Error(`ファイル ${objectKey} の内容を取得できません`);
     }
 
-    const inputFilePath = path.join(tmpPath, objectKey);
+    const fileName = path.basename(objectKey);
 
     // ファイルをローカルに保存
     const fileBytes = await data.Body.transformToByteArray();
-    fs.writeFileSync(inputFilePath, Buffer.from(fileBytes));
+    fs.writeFileSync(path.join(tmpPath, fileName), Buffer.from(fileBytes));
 
     // ファイルがPDFに変換可能か確認
-    if (!canBeConvertedToPDF(objectKey)) {
+    if (!canBeConvertedToPDF(fileName)) {
       throw new Error(`ファイル ${objectKey} はPDFに変換できません`);
     }
 
     // ファイルをPDFに変換
-    const outputFilePath = await convertTo(objectKey, "pdf");
+    const outputFilePath = await convertTo(fileName, "pdf");
 
     // 変換後のファイルをS3にアップロード
-    const outputKey = `${path.parse(objectKey).name}.pdf`;
+    const outputKey = `${fileName}.preview`;
     const putObjectParams = {
-      Bucket: bucketName,
+      Bucket: destinationBucketName,
       Key: outputKey,
       Body: fs.createReadStream(outputFilePath),
       ContentType: "application/pdf",
