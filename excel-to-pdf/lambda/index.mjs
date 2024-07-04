@@ -9,10 +9,16 @@ import path from "path";
 
 const s3 = new S3Client({ region: "ap-northeast-1" });
 
+/**
+ * @param {import('aws-lambda').APIGatewayProxyEventV2} event
+ * @returns {Promise<import('aws-lambda').APIGatewayProxyResultV2>}
+ */
 export const handler = async (event) => {
   const bucketName = process.env.S3_BUCKET_NAME;
-  const objectKey = event.objectKey;
-  const tmpPath = "/tmp";
+  const objectKey = event.queryStringParameters?.key ?? "";
+  const tmpPath = process.env.HOME ?? "/tmp";
+  console.log("event", JSON.stringify(event));
+  console.log({ objectKey, bucketName, tmpPath });
 
   try {
     // S3からファイルをダウンロード
@@ -26,17 +32,17 @@ export const handler = async (event) => {
 
     const inputFilePath = path.join(tmpPath, objectKey);
 
-    // Uint8Arrayを使用してファイルをローカルに保存
+    // ファイルをローカルに保存
     const fileBytes = await data.Body.transformToByteArray();
     fs.writeFileSync(inputFilePath, Buffer.from(fileBytes));
 
     // ファイルがPDFに変換可能か確認
-    if (!canBeConvertedToPDF(inputFilePath)) {
+    if (!canBeConvertedToPDF(objectKey)) {
       throw new Error(`ファイル ${objectKey} はPDFに変換できません`);
     }
 
     // ファイルをPDFに変換
-    const outputFilePath = await convertTo(inputFilePath, "pdf");
+    const outputFilePath = await convertTo(objectKey, "pdf");
 
     // 変換後のファイルをS3にアップロード
     const outputKey = `${path.parse(objectKey).name}.pdf`;
@@ -49,11 +55,16 @@ export const handler = async (event) => {
     const putObjectCommand = new PutObjectCommand(putObjectParams);
     await s3.send(putObjectCommand);
 
+    // PDFファイルをBase64エンコード
+    const pdfBuffer = fs.readFileSync(outputFilePath);
+
     return {
       statusCode: 200,
-      body: JSON.stringify({
-        message: `ファイルは${outputKey}として変換およびアップロードされました`,
-      }),
+      body: pdfBuffer.toString("base64"),
+      isBase64Encoded: true,
+      headers: {
+        "Content-Type": "application/pdf",
+      },
     };
   } catch (error) {
     console.error(error);
