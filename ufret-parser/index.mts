@@ -1,6 +1,10 @@
-// @ts-check
-
 import puppeteer from "puppeteer-core";
+
+declare global {
+  interface Window {
+    ufret_chord_datas: string[];
+  }
+}
 
 const browser = await puppeteer.launch({
   // Use system-installed Chrome
@@ -27,7 +31,6 @@ if (!match) {
 const title = match[1];
 const artist = match[2];
 const ufret_chord_datas = await page.evaluate(() => {
-  // @ts-ignore
   return window.ufret_chord_datas;
 });
 const score = ufret_chord_datas.join("").replaceAll("\r", "\n");
